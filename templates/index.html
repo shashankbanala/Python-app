@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .calculator-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .calculator-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .calculator-header h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .calculator-header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 25px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+
+        .result-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .result-value {
+            font-size: 1.5rem;
+            color: #667eea;
+            font-weight: 700;
+            word-break: break-all;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .examples {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+        }
+
+        .examples h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .example-item {
+            margin-bottom: 8px;
+            color: #666;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        @media (max-width: 600px) {
+            .calculator-container {
+                padding: 30px 20px;
+            }
+            
+            .calculator-header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="calculator-header">
+            <h1>🧮 Math Calculator</h1>
+            <p>Enter any mathematical expression and get instant results!</p>
+        </div>
+
+        <form id="calculatorForm">
+            <div class="input-group">
+                <label for="expression">Mathematical Expression:</label>
+                <input 
+                    type="text" 
+                    id="expression" 
+                    name="expression" 
+                    placeholder="e.g., 2 + 3 * 4, sin(3.14), sqrt(16)"
+                    autocomplete="off"
+                >
+            </div>
+
+            <button type="submit" class="calculate-btn">
+                Calculate Result
+            </button>
+        </form>
+
+        <div class="loading" id="loading">
+            Calculating...
+        </div>
+
+        <div class="result-container" id="resultContainer" style="display: none;">
+            <div class="result-label">Result:</div>
+            <div class="result-value" id="resultValue"></div>
+        </div>
+
+        <div class="examples">
+            <h3>📝 Examples:</h3>
+            <div class="example-item">• Basic arithmetic: 2 + 3 * 4</div>
+            <div class="example-item">• Functions: sin(3.14), cos(0), sqrt(16)</div>
+            <div class="example-item">• Complex: (2 + 3) * (4 - 1)</div>
+            <div class="example-item">• Powers: 2**3, exp(1)</div>
+            <div class="example-item">• Logarithms: log(10), abs(-5)</div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('calculatorForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const expression = document.getElementById('expression').value.trim();
+            const resultContainer = document.getElementById('resultContainer');
+            const resultValue = document.getElementById('resultValue');
+            const loading = document.getElementById('loading');
+            
+            if (!expression) {
+                alert('Please enter a mathematical expression');
+                return;
+            }
+            
+            // Show loading
+            loading.style.display = 'block';
+            resultContainer.style.display = 'none';
+            
+            try {
+                const response = await fetch('/calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ expression: expression })
+                });
+                
+                const data = await response.json();
+                
+                // Hide loading
+                loading.style.display = 'none';
+                
+                if (data.error) {
+                    resultValue.innerHTML = `<span style="color: #dc3545;">${data.error}</span>`;
+                } else {
+                    resultValue.textContent = data.result;
+                }
+                
+                resultContainer.style.display = 'block';
+                
+            } catch (error) {
+                loading.style.display = 'none';
+                resultValue.innerHTML = '<span style="color: #dc3545;">Error: Could not connect to server</span>';
+                resultContainer.style.display = 'block';
+            }
+        });
+
+        // Allow Enter key to submit
+        document.getElementById('expression').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('calculatorForm').dispatchEvent(new Event('submit'));
+            }
+        });
+    </script>
+</body>
+</html> 
